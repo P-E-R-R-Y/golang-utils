@@ -10,11 +10,8 @@ import (
 func TestGetAutoCompletionAddCommand(t *testing.T) {
 	rootCmd := &cobra.Command{Use: "testcli"}
 
-	// Get the auto-completion command with a custom name
-	autoCmd := mycobra.GetAutoCompletion("testtool")
-
 	// Add to root command
-	rootCmd.AddCommand(autoCmd)
+	rootCmd.AddCommand(mycobra.GetAutoCompletion("testtool"))
 
 	// Check if it was added successfully
 	found := false
@@ -34,11 +31,8 @@ func TestGetAutoCompletionAddCommand(t *testing.T) {
 func TestGetManualCompletionAddCommand(t *testing.T) {
 	rootCmd := &cobra.Command{Use: "testcli"}
 
-	// Get the auto-completion command with a custom name
-	manualCmd := mycobra.GetManualCompletion()
-
 	// Add to root command
-	rootCmd.AddCommand(manualCmd)
+	rootCmd.AddCommand(mycobra.GetManualCompletion())
 
 	// Check if it was added successfully
 	found := false
@@ -50,6 +44,6 @@ func TestGetManualCompletionAddCommand(t *testing.T) {
 	}
 
 	if !found {
-		t.Errorf("expected 'auto' command to be added to root")
+		t.Errorf("expected 'manual' command to be added to root")
 	}
 }

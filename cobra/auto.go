@@ -158,7 +158,7 @@ compinit`
     },
 }
 
-var deleteCompletionCmd = &cobra.Command{
+var manualCompletionCmd = &cobra.Command{
     Use:   "manual",
     Short: "Remove shell completion files and deregister the CLI completion",
     Long: `Detect your shell and remove completion setup:
@@ -220,5 +220,5 @@ func GetAutoCompletion(name string) *cobra.Command {
 }
 
 func GetManualCompletion() *cobra.Command {
-    return deleteCompletionCmd
+    return manualCompletionCmd
 }
