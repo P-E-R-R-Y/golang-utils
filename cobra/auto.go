@@ -6,6 +6,7 @@ import (
     "io/fs"
     "os"
     "os/user"
+    "os/exec"
     "path/filepath"
     "strings"
 
@@ -157,7 +158,67 @@ compinit`
     },
 }
 
-func GetCompletion(name string) *cobra.Command {
+var deleteCompletionCmd = &cobra.Command{
+    Use:   "manual",
+    Short: "Remove shell completion files and deregister the CLI completion",
+    Long: `Detect your shell and remove completion setup:
+
+- Deletes installed completion script
+- Deregisters completion behavior
+- You may need to restart your shell to fully apply`,
+    RunE: func(cmd *cobra.Command, args []string) error {
+        shell, err := getShell()
+        if err != nil {
+            return err
+        }
+        fmt.Printf("Detected shell: %s\n", shell)
+        home := homeDir()
+
+        switch shell {
+        case "bash":
+            path := filepath.Join(home, ".bash_completion.d", completion)
+            if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+                return err
+            }
+            fmt.Println("Bash completion removed. Restart your shell or run `exec bash`")
+
+        case "zsh":
+            path := filepath.Join(home, ".zsh", "completions", "_"+completion)
+            if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+                return err
+            }
+            // Unset function and deregister compdef
+            _ = exec.Command("unset", "-f", "_"+completion).Run()
+            _ = exec.Command("compdef", "-d", completion).Run()
+            fmt.Println("Zsh completion removed. Restart your shell or run `exec zsh`")
+
+        case "fish":
+            path := filepath.Join(home, ".config", "fish", "completions", completion+".fish")
+            if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+                return err
+            }
+            fmt.Println("Fish completion removed. Restart fish shell")
+
+        case "powershell":
+            path := filepath.Join(home, "Documents", "WindowsPowerShell", "Modules", completion, completion+".ps1")
+            if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+                return err
+            }
+            fmt.Println("PowerShell completion removed. You may need to restart PowerShell")
+
+        default:
+            return fmt.Errorf("unsupported shell: %s", shell)
+        }
+
+        return nil
+    },
+}
+
+func GetAutoCompletion(name string) *cobra.Command {
     completion = name
     return autoCompletionCmd
+}
+
+func GetManualCompletion() *cobra.Command {
+    return deleteCompletionCmd
 }
